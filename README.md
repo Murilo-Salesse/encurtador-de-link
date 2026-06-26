@@ -1,84 +1,201 @@
-# my-service serverless API
-The my-service project, created with [`aws-serverless-java-container`](https://github.com/aws/serverless-java-container).
+# 🔗 URL Shortener
 
-The starter project defines a simple `/ping` resource that can accept `GET` requests with its tests.
+A cloud-native URL shortening service built with **Java 21**, **Spring Boot** and **AWS DynamoDB**. The application allows authenticated users to create custom or random short links, redirect users, track click analytics and manage their URLs using a scalable serverless architecture.
 
-The project folder also includes a `template.yml` file. You can use this [SAM](https://github.com/awslabs/serverless-application-model) file to deploy the project to AWS Lambda and Amazon API Gateway or test in local with the [SAM CLI](https://github.com/awslabs/aws-sam-cli). 
+---
 
-## Pre-requisites
-* [AWS CLI](https://aws.amazon.com/cli/)
-* [SAM CLI](https://github.com/awslabs/aws-sam-cli)
-* [Gradle](https://gradle.org/) or [Maven](https://maven.apache.org/)
+## 🚀 Features
 
-## Building the project
-You can use the SAM CLI to quickly build the project
-```bash
-$ mvn archetype:generate -DartifactId=my-service -DarchetypeGroupId=com.amazonaws.serverless.archetypes -DarchetypeArtifactId=aws-serverless-jersey-archetype -DarchetypeVersion=2.0.1 -DgroupId=my.service -Dversion=1.0-SNAPSHOT -Dinteractive=false
-$ cd my-service
-$ sam build
-Building resource 'MyServiceFunction'
-Running JavaGradleWorkflow:GradleBuild
-Running JavaGradleWorkflow:CopyArtifacts
+* 🔐 JWT Authentication (RSA Key Pair)
+* 🔗 Create short URLs with custom or random slugs
+* 📈 Real-time click analytics
+* ⚡ Atomic counter using DynamoDB
+* 👤 Multi-user support
+* ☁️ AWS DynamoDB integration
+* 🐳 Local development with Docker & LocalStack
+* 📅 Link expiration support
+* 🏗️ Clean Architecture
 
-Build Succeeded
+---
 
-Built Artifacts  : .aws-sam/build
-Built Template   : .aws-sam/build/template.yaml
+## 🛠️ Tech Stack
 
-Commands you can use next
-=========================
-[*] Invoke Function: sam local invoke
-[*] Deploy: sam deploy --guided
+* Java 21
+* Spring Boot 3
+* Spring Security
+* AWS DynamoDB
+* AWS SDK v2 (Enhanced Client)
+* Docker
+* LocalStack
+* JWT (RSA)
+* Maven
+
+---
+
+## 📂 Project Structure
+
+```text
+src
+├── application
+├── domain
+├── infrastructure
+├── presentation
+└── shared
 ```
 
-## Testing locally with the SAM CLI
+The project follows **Clean Architecture**, separating business rules from infrastructure concerns.
 
-From the project root folder - where the `template.yml` file is located - start the API with the SAM CLI.
+---
+
+## 📋 Prerequisites
+
+Before running the project, make sure you have installed:
+
+* JDK 21+
+* Maven 3+
+* Docker
+* Docker Compose
+* AWS CLI (optional)
+
+---
+
+## 🔐 Generate RSA Keys
+
+Generate the JWT key pair inside:
 
 ```bash
-$ sam local start-api
-
-...
-Mounting com.amazonaws.serverless.archetypes.StreamLambdaHandler::handleRequest (java11) at http://127.0.0.1:3000/{proxy+} [OPTIONS GET HEAD POST PUT DELETE PATCH]
-...
+src/main/resources
 ```
 
-Using a new shell, you can send a test ping request to your API:
+Run:
 
 ```bash
-$ curl -s http://127.0.0.1:3000/ping | python -m json.tool
+openssl genrsa -out app.key 2048
+openssl rsa -in app.key -pubout -out app.pub
+```
 
+---
+
+## ▶️ Running the Project
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Murilo-Salesse/encurtador-de-links.git
+```
+
+Enter the project:
+
+```bash
+cd encurtador-de-links
+```
+
+Install dependencies:
+
+```bash
+mvn clean install
+```
+
+Start LocalStack (or Docker services):
+
+```bash
+docker compose up -d
+```
+
+Run the application:
+
+```bash
+mvn spring-boot:run
+```
+
+---
+
+## 📊 DynamoDB Tables
+
+### `tb_links`
+
+Stores the shortened URLs.
+
+Example:
+
+```json
 {
-    "pong": "Hello, World!"
+  "link_id": "fbr3",
+  "original_url": "https://google.com",
+  "user_id": "5d3bff48-4a9a-447f-8bf6-8bab3918e422",
+  "clicks": 12,
+  "created_at": "2026-06-26T12:30:00"
 }
-``` 
-
-## Deploying to AWS
-To deploy the application in your AWS account, you can use the SAM CLI's guided deployment process and follow the instructions on the screen
-
-```
-$ sam deploy --guided
 ```
 
-Once the deployment is completed, the SAM CLI will print out the stack's outputs, including the new application URL. You can use `curl` or a web browser to make a call to the URL
+---
 
+### `tb_links_analytics`
+
+Stores analytics for each user.
+
+Partition Key:
+
+```text
+user_id
 ```
-...
--------------------------------------------------------------------------------------------------------------
-OutputKey-Description                        OutputValue
--------------------------------------------------------------------------------------------------------------
-MyServiceApi - URL for application            https://xxxxxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/pets
--------------------------------------------------------------------------------------------------------------
+
+Sort Key:
+
+```text
+link_id
 ```
 
-Copy the `OutputValue` into a browser or use curl to test your first request:
+Example item:
 
-```bash
-$ curl -s https://xxxxxxx.execute-api.us-west-2.amazonaws.com/Prod/ping | python -m json.tool
-
+```json
 {
-    "pong": "Hello, World!"
+  "user_id": "5d3bff48-4a9a-447f-8bf6-8bab3918e422",
+  "link_id": "fbr3"
 }
 ```
 
-## GSI - Global Secondary Index
+---
+
+## 🔑 Authentication
+
+The API uses **JWT Bearer Token**.
+
+Example:
+
+```http
+Authorization: Bearer eyJhbGciOiJSUzI1NiJ9...
+```
+
+---
+
+## 📌 Main Endpoints
+
+| Method | Endpoint      | Description                     |
+| ------ | ------------- | ------------------------------- |
+| POST   | `/auth/login` | Authenticate user               |
+| POST   | `/links`      | Create a short URL              |
+| GET    | `/{slug}`     | Redirect to original URL        |
+| GET    | `/links`      | List authenticated user's links |
+| DELETE | `/links/{id}` | Delete a short URL              |
+
+---
+
+## 📈 Architecture
+
+```
+Client
+   │
+   ▼
+Spring Boot API
+   │
+   ├── Authentication (JWT)
+   ├── Application Layer
+   ├── Domain Layer
+   └── Infrastructure
+           │
+           ▼
+      DynamoDB
+```
+
+---
