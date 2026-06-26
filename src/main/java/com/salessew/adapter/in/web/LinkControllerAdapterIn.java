@@ -1,7 +1,10 @@
 package com.salessew.adapter.in.web;
 
+import com.salessew.adapter.in.web.dto.ApiResponseDTO;
+import com.salessew.adapter.in.web.dto.LinkResponseDTO;
 import com.salessew.adapter.in.web.dto.ShortenLinkRequestDTO;
 import com.salessew.adapter.in.web.dto.ShortenLinkResponseDTO;
+import com.salessew.core.port.in.MyLinksPortIn;
 import com.salessew.core.port.in.RedirectPortIn;
 import com.salessew.core.port.in.ShortenLinkPortIn;
 import jakarta.validation.Valid;
@@ -19,10 +22,13 @@ public class LinkControllerAdapterIn {
 
     private final ShortenLinkPortIn shortenLinkPortIn;
     private final RedirectPortIn redirectPortIn;
+    private final MyLinksPortIn myLinksPortIn;
 
-    public LinkControllerAdapterIn(ShortenLinkPortIn shortenLinkPortIn, RedirectPortIn redirectPortIn) {
+    public LinkControllerAdapterIn(ShortenLinkPortIn shortenLinkPortIn, RedirectPortIn redirectPortIn,
+                                   MyLinksPortIn myLinksPortIn) {
         this.shortenLinkPortIn = shortenLinkPortIn;
         this.redirectPortIn = redirectPortIn;
+        this.myLinksPortIn = myLinksPortIn;
     }
 
     @PostMapping(path = "/links")
@@ -38,8 +44,7 @@ public class LinkControllerAdapterIn {
     }
 
     @GetMapping(path = "/{linkId}")
-    public ResponseEntity<ShortenLinkResponseDTO> redirect(@PathVariable(name = "linkId") String linkId,
-                                                              JwtAuthenticationToken token) {
+    public ResponseEntity<ShortenLinkResponseDTO> redirect(@PathVariable String linkId) {
 
 
         var fullUrl = redirectPortIn.execute(linkId);
@@ -48,5 +53,21 @@ public class LinkControllerAdapterIn {
         headers.setLocation(URI.create(fullUrl));
 
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
+    }
+
+    @GetMapping(path = "/links")
+    public ResponseEntity<ApiResponseDTO<LinkResponseDTO>> userLinks(@RequestParam(name = "nextToken", defaultValue = "") String nextToken,
+                                                                     @RequestParam(name = "limit", defaultValue = "3") Integer limit,
+                                                                     JwtAuthenticationToken token) {
+
+        var userId = String.valueOf(token.getTokenAttributes().get("sub"));
+        var body = myLinksPortIn.execute(userId, nextToken, limit);
+
+        return ResponseEntity.ok(
+                new ApiResponseDTO<>(
+                        body.items().stream().map(LinkResponseDTO::fromDomain).toList(),
+                        body.nextToken()
+                )
+        );
     }
 }
