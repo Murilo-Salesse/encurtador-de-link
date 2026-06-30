@@ -1,6 +1,7 @@
 package com.salessew.core.usecase;
 
 import com.salessew.core.domain.Link;
+import com.salessew.core.domain.LinkFilter;
 import com.salessew.core.domain.PaginatedResult;
 import com.salessew.core.port.in.MyLinksPortIn;
 import com.salessew.core.port.out.LinkRepositoryPortOut;
@@ -18,8 +19,14 @@ public class MyLinksUseCase implements MyLinksPortIn {
     @Override
     public PaginatedResult<Link> execute(String userId,
                                          String nextToken,
-                                         int limit) {
+                                         int limit,
+                                         LinkFilter filters) {
 
-        return linkRepositoryPortOut.findAllByUserId(userId, nextToken, limit);
+        filters.validate();
+
+        return linkRepositoryPortOut.findAllByUserId(userId,
+                nextToken,
+                limit,
+                filters);
     }
 }

@@ -4,6 +4,7 @@ import com.salessew.adapter.in.web.dto.ApiResponseDTO;
 import com.salessew.adapter.in.web.dto.LinkResponseDTO;
 import com.salessew.adapter.in.web.dto.ShortenLinkRequestDTO;
 import com.salessew.adapter.in.web.dto.ShortenLinkResponseDTO;
+import com.salessew.core.domain.LinkFilter;
 import com.salessew.core.port.in.MyLinksPortIn;
 import com.salessew.core.port.in.RedirectPortIn;
 import com.salessew.core.port.in.ShortenLinkPortIn;
@@ -15,6 +16,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -58,14 +60,19 @@ public class LinkControllerAdapterIn {
     @GetMapping(path = "/links")
     public ResponseEntity<ApiResponseDTO<LinkResponseDTO>> userLinks(@RequestParam(name = "nextToken", defaultValue = "") String nextToken,
                                                                      @RequestParam(name = "limit", defaultValue = "3") Integer limit,
+                                                                     @RequestParam(name = "active", required = false) Boolean active,
+                                                                     @RequestParam(name = "startCreatedAt", required = false) LocalDate startCreatedAt,
+                                                                     @RequestParam(name = "endCreatedAt", required = false) LocalDate endCreatedAt,
                                                                      JwtAuthenticationToken token) {
 
         var userId = String.valueOf(token.getTokenAttributes().get("sub"));
-        var body = myLinksPortIn.execute(userId, nextToken, limit);
+        var body = myLinksPortIn.execute(userId, nextToken, limit, new LinkFilter(active, startCreatedAt, endCreatedAt));
 
         return ResponseEntity.ok(
                 new ApiResponseDTO<>(
-                        body.items().stream().map(LinkResponseDTO::fromDomain).toList(),
+                        body.items()
+                                .stream()
+                                .map(LinkResponseDTO::fromDomain).toList(),
                         body.nextToken()
                 )
         );
