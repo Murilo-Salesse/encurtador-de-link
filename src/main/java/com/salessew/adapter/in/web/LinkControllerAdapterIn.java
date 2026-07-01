@@ -1,10 +1,8 @@
 package com.salessew.adapter.in.web;
 
-import com.salessew.adapter.in.web.dto.ApiResponseDTO;
-import com.salessew.adapter.in.web.dto.LinkResponseDTO;
-import com.salessew.adapter.in.web.dto.ShortenLinkRequestDTO;
-import com.salessew.adapter.in.web.dto.ShortenLinkResponseDTO;
+import com.salessew.adapter.in.web.dto.*;
 import com.salessew.core.domain.LinkFilter;
+import com.salessew.core.port.in.LinkAnalyticsPortIn;
 import com.salessew.core.port.in.MyLinksPortIn;
 import com.salessew.core.port.in.RedirectPortIn;
 import com.salessew.core.port.in.ShortenLinkPortIn;
@@ -25,12 +23,14 @@ public class LinkControllerAdapterIn {
     private final ShortenLinkPortIn shortenLinkPortIn;
     private final RedirectPortIn redirectPortIn;
     private final MyLinksPortIn myLinksPortIn;
+    private final LinkAnalyticsPortIn linkAnalyticsPortIn;
 
     public LinkControllerAdapterIn(ShortenLinkPortIn shortenLinkPortIn, RedirectPortIn redirectPortIn,
-                                   MyLinksPortIn myLinksPortIn) {
+                                   MyLinksPortIn myLinksPortIn, LinkAnalyticsPortIn linkAnalyticsPortIn) {
         this.shortenLinkPortIn = shortenLinkPortIn;
         this.redirectPortIn = redirectPortIn;
         this.myLinksPortIn = myLinksPortIn;
+        this.linkAnalyticsPortIn = linkAnalyticsPortIn;
     }
 
     @PostMapping(path = "/links")
@@ -76,5 +76,17 @@ public class LinkControllerAdapterIn {
                         body.nextToken()
                 )
         );
+    }
+
+    @GetMapping(path = "/links/{linkId}/analytics")
+    public ResponseEntity<AnalyticsResponseDTO> linkAnalytics(@PathVariable String linkId,
+                                                              @RequestParam(name = "startCreatedAt") LocalDate startDate,
+                                                              @RequestParam(name = "endCreatedAt") LocalDate endDate,
+                                                              JwtAuthenticationToken token) {
+
+        var userId = String.valueOf(token.getTokenAttributes().get("sub"));
+        var body = linkAnalyticsPortIn.execute(userId, linkId, startDate, endDate);
+
+        return ResponseEntity.ok(body);
     }
 }

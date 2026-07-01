@@ -2,11 +2,14 @@ package com.salessew.adapter.out.persistence;
 
 import com.salessew.config.TableName;
 import com.salessew.core.domain.Link;
+import com.salessew.core.domain.LinkAnalytics;
 import software.amazon.awssdk.enhanced.dynamodb.extensions.annotations.DynamoDbAtomicCounter;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @DynamoDbBean
 @TableName(name = "tb_links_analytics")
@@ -70,5 +73,14 @@ public class LinkAnalyticsEntity {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public LinkAnalytics toDomain() {
+        return new LinkAnalytics(
+                linkId,
+                date,
+                Long.valueOf(clicks),
+                LocalDateTime.ofInstant(updatedAt, ZoneId.systemDefault())
+        );
     }
 }

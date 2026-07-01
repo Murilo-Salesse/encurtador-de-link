@@ -1,7 +1,6 @@
 package com.salessew.core.domain;
 
 import io.micrometer.common.util.StringUtils;
-import jakarta.ws.rs.core.UriBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDateTime;
@@ -82,5 +81,9 @@ public class Link {
         }
 
         return builder.toUriString();
+    }
+
+    public boolean isUserOwner(UUID userId) {
+        return this.user.getUserId().equals(userId);
     }
 }

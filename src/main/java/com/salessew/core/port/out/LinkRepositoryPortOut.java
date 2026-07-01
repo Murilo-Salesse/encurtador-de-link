@@ -4,8 +4,6 @@ import com.salessew.core.domain.Link;
 import com.salessew.core.domain.LinkFilter;
 import com.salessew.core.domain.PaginatedResult;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface LinkRepositoryPortOut {
