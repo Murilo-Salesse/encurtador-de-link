@@ -9,9 +9,6 @@ import java.util.Optional;
 public interface LinkRepositoryPortOut {
 
     Link save(Link link);
-    Optional<Link> findById(String linkId);
-    PaginatedResult<Link> findAllByUserId(String userId,
-                                          String nextToken,
-                                          int limit,
-                                          LinkFilter filters);
+    Optional<Link> findById(String id);
+    PaginatedResult<Link> findAllByUserId(String userId, String nextToken, int limit, LinkFilter filters);
 }

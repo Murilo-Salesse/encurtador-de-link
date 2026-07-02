@@ -3,16 +3,16 @@ package com.salessew.core.usecase;
 import com.salessew.core.domain.Link;
 import com.salessew.core.domain.LinkFilter;
 import com.salessew.core.domain.PaginatedResult;
-import com.salessew.core.port.in.MyLinksPortIn;
+import com.salessew.core.port.in.UserLinksPortIn;
 import com.salessew.core.port.out.LinkRepositoryPortOut;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MyLinksUseCase implements MyLinksPortIn {
+public class UserLinks implements UserLinksPortIn {
 
     private final LinkRepositoryPortOut linkRepositoryPortOut;
 
-    public MyLinksUseCase(LinkRepositoryPortOut linkRepositoryPortOut) {
+    public UserLinks(LinkRepositoryPortOut linkRepositoryPortOut) {
         this.linkRepositoryPortOut = linkRepositoryPortOut;
     }
 

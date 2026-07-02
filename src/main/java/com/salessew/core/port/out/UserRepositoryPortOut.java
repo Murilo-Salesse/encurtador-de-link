@@ -9,6 +9,6 @@ public interface UserRepositoryPortOut {
 
     User save(User user);
     Optional<User> findByEmail(String email);
-    void deleteById(UUID userId);
     Optional<User> findById(UUID userId);
+    void deleteById(UUID userId);
 }

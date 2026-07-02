@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import static com.salessew.adapter.out.persistence.DynamoDbAttributeConstants.*;
+
 @DynamoDbBean
 @TableName(name = "tb_links_analytics")
 public class LinkAnalyticsEntity {
@@ -18,14 +20,12 @@ public class LinkAnalyticsEntity {
     private String linkId;
     private LocalDate date;
     private Integer clicks;
-
     private Instant updatedAt;
 
     public LinkAnalyticsEntity() {
     }
 
     public static LinkAnalyticsEntity fromDomain(Link link, LocalDate date) {
-
         var entity = new LinkAnalyticsEntity();
 
         entity.setLinkId(link.getLinkId());
@@ -36,8 +36,8 @@ public class LinkAnalyticsEntity {
         return entity;
     }
 
-    @DynamoDbPartitionKey()
-    @DynamoDbAttribute("link_id")
+    @DynamoDbPartitionKey
+    @DynamoDbAttribute(ANALYTICS_LINK_ID)
     public String getLinkId() {
         return linkId;
     }
@@ -47,7 +47,7 @@ public class LinkAnalyticsEntity {
     }
 
     @DynamoDbSortKey
-    @DynamoDbAttribute("date")
+    @DynamoDbAttribute(ANALYTICS_DATE)
     public LocalDate getDate() {
         return date;
     }
@@ -57,7 +57,7 @@ public class LinkAnalyticsEntity {
     }
 
     @DynamoDbAtomicCounter(startValue = 1)
-    @DynamoDbAttribute("clicks")
+    @DynamoDbAttribute(ANALYTICS_CLICKS)
     public Integer getClicks() {
         return clicks;
     }
@@ -66,7 +66,7 @@ public class LinkAnalyticsEntity {
         this.clicks = clicks;
     }
 
-    @DynamoDbAttribute("updated_at")
+    @DynamoDbAttribute(ANALYTICS_UPDATED_AT)
     public Instant getUpdatedAt() {
         return updatedAt;
     }

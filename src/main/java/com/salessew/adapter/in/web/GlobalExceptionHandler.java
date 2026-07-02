@@ -1,6 +1,8 @@
 package com.salessew.adapter.in.web;
 
 import com.salessew.core.exception.DomainException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,13 +12,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(DomainException.class)
     public ProblemDetail handleDomainException(DomainException e) {
+        logger.error("A domain error occured - handleDomainException", e);
         return e.toProblemDetail();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        logger.error("A validation error occured - handleMethodArgumentNotValidException", e);
 
         var fieldErros = e.getFieldErrors()
                 .stream()

@@ -5,7 +5,7 @@ import com.salessew.core.domain.LinkFilter;
 import com.salessew.core.domain.PaginatedResult;
 
 
-public interface MyLinksPortIn {
+public interface UserLinksPortIn {
 
     PaginatedResult<Link> execute(String uuid, String nextToken,
                                   int limit,

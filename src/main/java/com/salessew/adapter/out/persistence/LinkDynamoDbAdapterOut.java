@@ -19,41 +19,46 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.salessew.adapter.out.persistence.DynamoDbAttributeConstants.LINK_ACTIVE;
+import static com.salessew.adapter.out.persistence.DynamoDbAttributeConstants.LINK_CREATED_AT;
 import static com.salessew.config.Constants.FK_TB_USERS_LINK_USER_INDEX;
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 @Component
 public class LinkDynamoDbAdapterOut implements LinkRepositoryPortOut {
 
     private final DynamoDbTemplate dynamoDbTemplate;
-    private final LinkDynamoDbTokenHelper linkDynamoDbTokenHelper;
+    private final LinkDynamoDbTokenHelper tokenHelper;
 
-    public LinkDynamoDbAdapterOut(DynamoDbTemplate dynamoDbTemplate, LinkDynamoDbTokenHelper linkDynamoDbTokenHelper) {
+    public LinkDynamoDbAdapterOut(DynamoDbTemplate dynamoDbTemplate,
+                                  LinkDynamoDbTokenHelper tokenHelper) {
         this.dynamoDbTemplate = dynamoDbTemplate;
-        this.linkDynamoDbTokenHelper = linkDynamoDbTokenHelper;
+        this.tokenHelper = tokenHelper;
     }
 
     @Override
     public Link save(Link link) {
 
         var entity = LinkEntity.fromDomain(link);
+
         dynamoDbTemplate.save(entity);
 
         return link;
     }
 
     @Override
-    public Optional<Link> findById(String linkId) {
+    public Optional<Link> findById(String id) {
 
         var key = Key.builder()
-                .partitionValue(linkId)
+                .partitionValue(id)
                 .build();
 
         var entity = dynamoDbTemplate.load(key, LinkEntity.class);
 
         return entity == null ?
-                Optional.empty()
-                : Optional.of(entity.toDomain());
+                Optional.empty() :
+                Optional.of(entity.toDomain());
     }
 
     @Override
@@ -62,31 +67,48 @@ public class LinkDynamoDbAdapterOut implements LinkRepositoryPortOut {
                                                  int limit,
                                                  LinkFilter filters) {
 
-        QueryConditional qc = QueryConditional.keyEqualTo(
-                Key.builder()
-                        .partitionValue(userId)
-                        .build()
-        );
+        QueryConditional qc = buildPartitionKeyUserId(userId);
 
         List<String> conditions = new ArrayList<>();
         Map<String, AttributeValue> expValues = new HashMap<>();
 
+        buildFiltersParam(filters, conditions, expValues);
+
+        var queryReq = buildDynamoDbRequest(
+                nextToken, limit, qc, conditions, expValues
+        );
+
+        Page<LinkEntity> page = executeQuery(queryReq);
+
+        return convertAndReturn(page);
+    }
+
+    private static QueryConditional buildPartitionKeyUserId(String userId) {
+        return QueryConditional.keyEqualTo(
+                Key.builder()
+                        .partitionValue(userId)
+                        .build()
+        );
+    }
+
+    private static void buildFiltersParam(LinkFilter filters, List<String> conditions, Map<String, AttributeValue> expValues) {
         if (!isNull(filters.active())) {
-            conditions.add("active = :activeValue");
+            conditions.add(format("%s = :activeValue", LINK_ACTIVE));
             expValues.put(":activeValue", AttributeValue.fromBool(filters.active()));
         }
 
         if (!isNull(filters.startCreatedAt()) && !isNull(filters.endCreatedAt())) {
-            conditions.add("created_at BETWEEN :startCreatedAt AND :endCreatedAt");
+            conditions.add(format("%s BETWEEN :startCreatedAt AND :endCreatedAt", LINK_CREATED_AT));
             expValues.put(":startCreatedAt", AttributeValue.fromS(LocalDateTime.of(filters.startCreatedAt(), LocalTime.MIN).toString()));
             expValues.put(":endCreatedAt", AttributeValue.fromS(LocalDateTime.of(filters.endCreatedAt(), LocalTime.MAX).toString()));
         }
+    }
 
+    private QueryEnhancedRequest buildDynamoDbRequest(String nextToken, int limit, QueryConditional qc, List<String> conditions, Map<String, AttributeValue> expValues) {
         QueryEnhancedRequest.Builder requestBuilder = QueryEnhancedRequest.builder()
                 .queryConditional(qc)
                 .limit(limit);
 
-        // Filtros
         if (!conditions.isEmpty()) {
             requestBuilder.filterExpression(Expression.builder()
                     .expression(String.join(" AND ", conditions))
@@ -95,30 +117,36 @@ public class LinkDynamoDbAdapterOut implements LinkRepositoryPortOut {
         }
 
         if (nextToken != null && !nextToken.isEmpty()) {
-            var map = linkDynamoDbTokenHelper.decodeStartToken(nextToken);
+            var map = tokenHelper.decodeStartToken(nextToken);
             requestBuilder.exclusiveStartKey(map);
         }
 
-        Page<LinkEntity> page = dynamoDbTemplate
-                .query(requestBuilder.build(), LinkEntity.class, FK_TB_USERS_LINK_USER_INDEX)
+        return requestBuilder.build();
+    }
+
+    private Page<LinkEntity> executeQuery(QueryEnhancedRequest queryReq) {
+        return dynamoDbTemplate
+                .query(queryReq, LinkEntity.class, FK_TB_USERS_LINK_USER_INDEX)
                 .stream()
                 .findFirst()
                 .orElse(null);
-
-                if (page == null) {
-                    return new PaginatedResult<>(Collections.emptyList(), null, false);
-                }
-
-                var links = page
-                        .items()
-                        .stream()
-                        .map(LinkEntity::toDomain)
-                        .collect(Collectors.toList());
-
-                return new PaginatedResult<>(
-                        links,
-                        page.lastEvaluatedKey() != null ? linkDynamoDbTokenHelper.encodeStartToken(page.lastEvaluatedKey()) : "",
-                        page.lastEvaluatedKey() != null
-                );
     }
+
+    private PaginatedResult<Link> convertAndReturn(Page<LinkEntity> page) {
+        if (page == null) {
+            return new PaginatedResult<>(Collections.emptyList(), null, false);
+        }
+
+        var links = page.items()
+                .stream()
+                .map(LinkEntity::toDomain)
+                .collect(Collectors.toList());
+
+        return new PaginatedResult<>(
+                links,
+                page.lastEvaluatedKey() != null ? tokenHelper.encodeStartToken(page.lastEvaluatedKey()) : "",
+                page.lastEvaluatedKey() != null
+        );
+    }
+
 }
