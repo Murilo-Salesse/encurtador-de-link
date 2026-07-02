@@ -47,7 +47,7 @@ public class LinkControllerAdapterIn {
                                                            HttpServletRequest servletRequest,
                                                            JwtAuthenticationToken token) {
 
-        logger.info("Request {} - {}", req, token);
+        logger.info("Request incoming: {} - {}", req, token);
 
         var userId = UUID.fromString(token.getToken().getSubject());
         var linkId = shortenLinkPortIn.execute(req.toDomain(userId));
