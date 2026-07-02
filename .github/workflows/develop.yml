@@ -15,6 +15,6 @@ jobs:
     with:
       environment: dev
       aws-assume-role-arn: "arn:aws:iam::800960611580:role/GithubActions-EncurtadorLinks-ROle"
-      aws-region: "sa-east-1"
+      aws-region: "us-east-1"
       aws-statefile-s3-bucket: "murilo-salesse-sa-east-1-terraform-statefile"
       aws-lock-dynamodb-table: "murilo-salesse-sa-east-1-terraform-lock"
