@@ -13,7 +13,7 @@ jobs:
   cicd:
     uses: ./.github/workflows/cicd.yml
     with:
-      environment: prod
+      environment: dev
       aws-assume-role-arn: "arn:aws:iam::800960611580:role/GithubActions-EncurtadorLinks-ROle"
       aws-region: "us-east-1"
       aws-statefile-s3-bucket: "murilo-salesse-sa-east-1-terraform-statefile"

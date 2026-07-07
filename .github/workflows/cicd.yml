@@ -81,7 +81,7 @@ jobs:
           
           aws s3 cp "${{ steps.build.outputs.jar_path }}" "s3://${{ inputs.artifact-bucket }}/${KEY}"
           
-          aws sam put-parameter \
+          aws ssm put-parameter \
             --name "${{ inputs.ssm-param-artifact-key }}/latest_jar_key" \
             --value "$KEY" \
             --type String \
