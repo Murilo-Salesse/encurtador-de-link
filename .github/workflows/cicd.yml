@@ -87,6 +87,10 @@ jobs:
           
           echo "s3_key=$KEY" >> $GITHUB_OUTPUT
 
+      - name: Check artifact
+        run: |
+          aws s3 ls s3://${{ inputs.artifact-bucket }}
+
       - name: Read JAR Key from SSM (PROD)
         if: ${{ inputs.environment == 'prod' }}
         id: readKey
