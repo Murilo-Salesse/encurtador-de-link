@@ -55,5 +55,6 @@ variable "domain_name" {
 }
 
 variable "acm_domain_name_arn" {
-  type = string
+  type    = string
+  default = ""
 }

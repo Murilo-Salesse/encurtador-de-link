@@ -9,8 +9,8 @@ app_prefix = "encurtador-links-saas"
 
 lambda_handler = "com.salessew.StreamLambdaHandler::handleRequest"
 
-acm_domain_name_arn = ""
-domain_name = ""
+# acm_domain_name_arn = ""
+# domain_name = ""
 
 env_vars = {
   "ENV"="prod"

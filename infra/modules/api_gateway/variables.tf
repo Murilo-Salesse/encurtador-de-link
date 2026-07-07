@@ -19,6 +19,6 @@ variable "domain_name" {
   type = string
 }
 
-variable "acm_domain_name_arn" {
-  type = string
-}
+# variable "acm_domain_name_arn" {
+#   type = string
+# }
