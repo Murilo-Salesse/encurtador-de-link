@@ -18,3 +18,5 @@ jobs:
       aws-region: "us-east-1"
       aws-statefile-s3-bucket: "murilo-salesse-sa-east-1-terraform-statefile"
       aws-lock-dynamodb-table: "murilo-salesse-sa-east-1-terraform-lock"
+      artifact-bucket: "murilo-salesse-sa-east-1-terraform-statefile"
+      ssm-param-artifact-key: "/apps/encurtador_links_saas"
