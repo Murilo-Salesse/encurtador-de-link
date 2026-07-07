@@ -16,7 +16,8 @@ variable "timeout_ms" {
 }
 
 variable "domain_name" {
-  type = string
+  type    = string
+  default = ""
 }
 
 # variable "acm_domain_name_arn" {

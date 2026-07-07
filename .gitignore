@@ -1,2 +1,12 @@
+# Chaves
 **/app.key
 **/app.pub
+
+# Terraform / Infra
+infra/
+
+# SAM build
+.aws-sam/
+
+# GitHub Actions
+.github/
