@@ -41,7 +41,7 @@ resource "aws_apigatewayv2_domain_name" "this" {
   domain_name = var.domain_name
 
   domain_name_configuration {
-    certificate_arn = var.acm_domain_name_arn
+#     certificate_arn = var.acm_domain_name_arn
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }

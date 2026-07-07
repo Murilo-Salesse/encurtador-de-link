@@ -38,7 +38,7 @@ module "api" {
   lambda_arn          = module.lambda.aws_lambda_alias_snapstart.arn
   lambda_invoke_arn   = module.lambda.aws_lambda_alias_snapstart.invoke_arn
   timeout_ms          = 29000
-  acm_domain_name_arn = var.acm_domain_name_arn
+#   acm_domain_name_arn = var.acm_domain_name_arn
   domain_name         = var.domain_name
 }
 
